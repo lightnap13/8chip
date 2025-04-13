@@ -1,0 +1,16 @@
+
+# Build products
+/build/
+/bin/
+
+# We do not want to upload the data folder
+/data/
+
+# Dependencies
+/external/**
+!/external/CMakeLists.txt
+
+
+# Editor byproducts
+/.cache/
+/.projectile

@@ -1,0 +1,26 @@
+## Clang format document. Used by the clang-format program to automatically format code.
+---
+# Use for global setting which will apply to all languages.
+BasedOnStyle: "Mozilla"
+ColumnLimit: 180
+IndentWidth: 4
+
+---
+# Use for settings which will only apply to cpp.
+Language: "Cpp"
+
+AlignConsecutiveDeclarations: "Consecutive"
+AllowAllArgumentsOnNextLine: false
+AllowAllParametersOfDeclarationOnNextLine: false
+AllowShortBlocksOnASingleLine: true
+AlwaysBreakAfterDefinitionReturnType: "None"
+AlwaysBreakAfterReturnType: "None"
+BinPackArguments: false
+BinPackParameters: false
+BreakBeforeBraces: "Allman"
+BreakConstructorInitializers: "BeforeComma"
+BreakInheritanceList: "BeforeComma"
+Cpp11BracedListStyle: true
+NamespaceIndentation: "All"
+PackConstructorInitializers: "Never"
+SpaceBeforeCpp11BracedList: true
