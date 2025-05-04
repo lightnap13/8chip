@@ -28,7 +28,7 @@ int main()
         // display.draw_frame();
         std::cout << "[INFO] Frame number " << i << std::endl;
         std::cout << "\n\n";
-        processor.execute_next_instruction(&ram);
+        processor.execute_next_instruction(&ram, &display);
 
         // ram.print();
         sleep(1);
