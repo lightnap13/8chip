@@ -19,6 +19,8 @@ namespace chip8
 
       private:
         void execute_opcode_0XXX(int16_t opcode);
+        void execute_opcode_0E00(int16_t opcode);
+        void execute_opcode_00EE(int16_t opcode);
         void execute_opcode_1NNN(int16_t opcode);
         void execute_opcode_2NNN(int16_t opcode);
         void execute_opcode_3XNN(int16_t opcode);
@@ -27,13 +29,33 @@ namespace chip8
         void execute_opcode_6XNN(int16_t opcode);
         void execute_opcode_7XNN(int16_t opcode);
         void execute_opcode_8XXX(int16_t opcode);
+        void execute_opcode_8XY0(int16_t opcode);
+        void execute_opcode_8XY1(int16_t opcode);
+        void execute_opcode_8XY2(int16_t opcode);
+        void execute_opcode_8XY3(int16_t opcode);
+        void execute_opcode_8XY4(int16_t opcode);
+        void execute_opcode_8XY5(int16_t opcode);
+        void execute_opcode_8XY6(int16_t opcode);
+        void execute_opcode_8XY7(int16_t opcode);
+        void execute_opcode_8XYE(int16_t opcode);
         void execute_opcode_9XY0(int16_t opcode);
         void execute_opcode_ANNN(int16_t opcode);
         void execute_opcode_BNNN(int16_t opcode);
         void execute_opcode_CXNN(int16_t opcode);
         void execute_opcode_DXYN(int16_t opcode);
         void execute_opcode_EXXX(int16_t opcode);
+        void execute_opcode_EX9E(int16_t opcode);
+        void execute_opcode_EXA1(int16_t opcode);
         void execute_opcode_FXXX(int16_t opcode);
+        void execute_opcode_FX07(int16_t opcode);
+        void execute_opcode_FX0A(int16_t opcode);
+        void execute_opcode_FX15(int16_t opcode);
+        void execute_opcode_FX18(int16_t opcode);
+        void execute_opcode_FX1E(int16_t opcode);
+        void execute_opcode_FX29(int16_t opcode);
+        void execute_opcode_FX33(int16_t opcode);
+        void execute_opcode_FX55(int16_t opcode);
+        void execute_opcode_FX65(int16_t opcode);
 
         int16_t              _program_counter;
         int16_t              _register_i;

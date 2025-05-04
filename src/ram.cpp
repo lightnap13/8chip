@@ -84,7 +84,7 @@ namespace chip8
     {
         int32_t lines_width = 16; // 16 bytes per line.
 
-        log::log(log::eLevel::debug, "Printing ram");
+        thoth::debug("Printing ram");
 
         for (int y = 0; y < _ram.size() / lines_width; y++)
         {
