@@ -1,6 +1,7 @@
 #include "processor.hpp"
 
 #include "display.hpp"
+#include "keyboard.hpp"
 #include "log.hpp"
 #include "ram.hpp"
 
@@ -16,7 +17,7 @@ namespace chip8
         _program_counter = static_cast<int16_t>(program_start_location);
     }
 
-    void cProcessor::execute_next_instruction(cRam* ram, cDisplay* display)
+    void cProcessor::execute_next_instruction(cRam* ram, cDisplay* display, cKeyboard* keyboard)
     {
         assert(_program_counter < ram->size() - 1);
         uint16_t instr_first_half = static_cast<uint16_t>(ram->read(_program_counter));
@@ -105,14 +106,14 @@ namespace chip8
             case 0x0E:
             {
                 // Needs keyboard.
-                execute_opcode_EXXX(opcode);
+                execute_opcode_EXXX(opcode, keyboard);
             }
             break;
             case 0x0F:
             {
                 // Needs timers
                 // Needs keyboard.
-                execute_opcode_FXXX(opcode, ram);
+                execute_opcode_FXXX(opcode, ram, keyboard);
             }
             break;
             default:
@@ -210,7 +211,7 @@ namespace chip8
         }
     }
 
-    void cProcessor::execute_opcode_EXXX(int16_t opcode)
+    void cProcessor::execute_opcode_EXXX(int16_t opcode, cKeyboard* keyboard)
     {
         // Opcode = Nibble 1234
         uint8_t nibble3 = (opcode >> 4) & 0x000F;
@@ -218,11 +219,11 @@ namespace chip8
 
         if (nibble3 == 0x9 && nibble4 == 0xE)
         {
-            execute_opcode_EX9E(opcode);
+            execute_opcode_EX9E(opcode, keyboard);
         }
         else if (nibble3 == 0xA && nibble4 == 0x1)
         {
-            execute_opcode_EXA1(opcode);
+            execute_opcode_EXA1(opcode, keyboard);
         }
         else
         {
@@ -230,7 +231,7 @@ namespace chip8
             std::abort();
         }
     }
-    void cProcessor::execute_opcode_FXXX(int16_t opcode, cRam* ram)
+    void cProcessor::execute_opcode_FXXX(int16_t opcode, cRam* ram, cKeyboard* keyboard)
     {
         // Opcode = Nibble 1234
         uint8_t nibble3 = (opcode >> 4) & 0x000F;
@@ -242,7 +243,7 @@ namespace chip8
         }
         else if (nibble3 == 0x0 && nibble4 == 0xA)
         {
-            execute_opcode_FX0A(opcode);
+            execute_opcode_FX0A(opcode, keyboard);
         }
         else if (nibble3 == 0x1 && nibble4 == 0x5)
         {
@@ -376,11 +377,11 @@ namespace chip8
         // I does no change.
         // Set VF to 1 if any bits are flipped from set to unset when drawing, 0 if that does not happen.
     }
-    void cProcessor::execute_opcode_EX9E(int16_t opcode)
+    void cProcessor::execute_opcode_EX9E(int16_t opcode, cKeyboard* keyboard)
     {
         // Skip next instruction if key stored in Vx (consider only lowest nibble (half-bit)) is pressed.
     }
-    void cProcessor::execute_opcode_EXA1(int16_t opcode)
+    void cProcessor::execute_opcode_EXA1(int16_t opcode, cKeyboard* keyboard)
     {
         // Skip next instruction if key stored in Vx (consider only lowest nibble (half-bit)) is NOT pressed.
     }
@@ -388,7 +389,7 @@ namespace chip8
     {
         // Sets vx to the current value of the delay timer
     }
-    void cProcessor::execute_opcode_FX0A(int16_t opcode)
+    void cProcessor::execute_opcode_FX0A(int16_t opcode, cKeyboard* keyboard)
     {
         // A key press is awaited, then stored in Vx
         // Blocking operation, all instructions halted until next event
