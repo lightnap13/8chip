@@ -17,7 +17,7 @@ namespace chip8
         _program_counter = static_cast<int16_t>(program_start_location);
     }
 
-    void cProcessor::execute_next_instruction(cRam* ram, cDisplay* display, cKeyboard* keyboard)
+    void cProcessor::execute_next_instruction(cRam* ram, cDisplay* display, cKeyboard* keyboard, cTimer* delay_timer, cTimer* sound_timer)
     {
         assert(_program_counter < ram->size() - 1);
         uint16_t instr_first_half = static_cast<uint16_t>(ram->read(_program_counter));
@@ -113,7 +113,7 @@ namespace chip8
             {
                 // Needs timers
                 // Needs keyboard.
-                execute_opcode_FXXX(opcode, ram, keyboard);
+                execute_opcode_FXXX(opcode, ram, keyboard, delay_timer, sound_timer);
             }
             break;
             default:
@@ -231,7 +231,7 @@ namespace chip8
             std::abort();
         }
     }
-    void cProcessor::execute_opcode_FXXX(int16_t opcode, cRam* ram, cKeyboard* keyboard)
+    void cProcessor::execute_opcode_FXXX(int16_t opcode, cRam* ram, cKeyboard* keyboard, cTimer* delay_timer, cTimer* sound_timer)
     {
         // Opcode = Nibble 1234
         uint8_t nibble3 = (opcode >> 4) & 0x000F;
@@ -239,7 +239,7 @@ namespace chip8
 
         if (nibble3 == 0x0 && nibble4 == 0x7)
         {
-            execute_opcode_FX07(opcode);
+            execute_opcode_FX07(opcode, delay_timer);
         }
         else if (nibble3 == 0x0 && nibble4 == 0xA)
         {
@@ -247,11 +247,11 @@ namespace chip8
         }
         else if (nibble3 == 0x1 && nibble4 == 0x5)
         {
-            execute_opcode_FX15(opcode);
+            execute_opcode_FX15(opcode, delay_timer);
         }
         else if (nibble3 == 0x1 && nibble4 == 0x8)
         {
-            execute_opcode_FX18(opcode);
+            execute_opcode_FX18(opcode, sound_timer);
         }
         else if (nibble3 == 0x1 && nibble4 == 0xE)
         {
@@ -385,7 +385,7 @@ namespace chip8
     {
         // Skip next instruction if key stored in Vx (consider only lowest nibble (half-bit)) is NOT pressed.
     }
-    void cProcessor::execute_opcode_FX07(int16_t opcode)
+    void cProcessor::execute_opcode_FX07(int16_t opcode, cTimer* delay_timer)
     {
         // Sets vx to the current value of the delay timer
     }
@@ -395,11 +395,11 @@ namespace chip8
         // Blocking operation, all instructions halted until next event
         // But sound and delay timers keep processing.
     }
-    void cProcessor::execute_opcode_FX15(int16_t opcode)
+    void cProcessor::execute_opcode_FX15(int16_t opcode, cTimer* delay_timer)
     {
         // Sets delay timer to Vx
     }
-    void cProcessor::execute_opcode_FX18(int16_t opcode)
+    void cProcessor::execute_opcode_FX18(int16_t opcode, cTimer* sound_timer)
     {
         // Sets sound timer to Vx
     }

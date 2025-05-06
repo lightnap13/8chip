@@ -11,4 +11,6 @@ target_sources(
           processor.cpp
           ram.hpp
           ram.cpp
+          timer.hpp
+          timer.cpp
 )

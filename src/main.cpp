@@ -2,6 +2,7 @@
 #include "keyboard.hpp"
 #include "processor.hpp"
 #include "ram.hpp"
+#include "timer.hpp"
 
 #include <cstdlib>
 #include <iostream>
@@ -23,6 +24,9 @@ int main()
 
     chip8::cKeyboard keyboard;
 
+    chip8::cTimer delay_timer;
+    chip8::cTimer sound_timer;
+
     chip8::cProcessor processor {chip8::PROGRAM_START_LOCATION, chip8::REGISTER_COUNT};
 
     for (int i = 0; i < 20; i++)
@@ -31,7 +35,7 @@ int main()
         // display.draw_frame();
         std::cout << "[INFO] Frame number " << i << std::endl;
         std::cout << "\n\n";
-        processor.execute_next_instruction(&ram, &display, &keyboard);
+        processor.execute_next_instruction(&ram, &display, &keyboard, &delay_timer, &sound_timer);
 
         // ram.print();
         sleep(1);
