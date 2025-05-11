@@ -6,7 +6,10 @@ namespace chip8
     {
         // TODO: Make this update at 60Hz per second.
         // TODO: Make it so that sound timer beeps when reaching 0.
-        _time--;
+        if (_time > 0)
+        {
+            _time--;
+        }
     }
 
     uint8_t cTimer::get_time() const

@@ -82,9 +82,11 @@ namespace chip8
 
     void cRam::print()
     {
-        int32_t lines_width = 16; // 16 bytes per line.
+        int32_t lines_width = 16; //  bytes per line.
+        int32_t number_segments = 2;
+        int32_t bytes_per_segment = lines_width / number_segments;
 
-        thoth::debug("Printing ram");
+        thoth::debug("Printing ram\n");
 
         for (int y = 0; y < _ram.size() / lines_width; y++)
         {
@@ -92,7 +94,7 @@ namespace chip8
             {
                 uint8_t current_byte = _ram[y * lines_width + x];
                 printf("%02x ", current_byte);
-                if (x % 8 == 7)
+                if ((x + 1) % bytes_per_segment == 0)
                 {
                     printf(" ");
                 }

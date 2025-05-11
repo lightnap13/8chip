@@ -10,6 +10,9 @@
 
 int main()
 {
+
+    std::srand(0); // TODO: Use actual random.
+
     chip8::cRam ram {chip8::RAM_SIZE, chip8::PROGRAM_START_LOCATION};
 
     if (ram.load_rom("../data/octojam6title.ch8") != 0)

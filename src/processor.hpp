@@ -21,11 +21,11 @@ namespace chip8
         void execute_next_instruction(cRam* ram, cDisplay* display, cKeyboard* keyboard, cTimer* delay_timer, cTimer* sound_timer);
 
       private:
-        void execute_opcode_0XXX(int16_t opcode, cDisplay* display);
+        void execute_opcode_0XXX(int16_t opcode, cRam* ram, cDisplay* display);
         void execute_opcode_0E00(int16_t opcode, cDisplay* display);
-        void execute_opcode_00EE(int16_t opcode);
+        void execute_opcode_00EE(int16_t opcode, cRam* ram);
         void execute_opcode_1NNN(int16_t opcode);
-        void execute_opcode_2NNN(int16_t opcode);
+        void execute_opcode_2NNN(int16_t opcode, cRam* ram);
         void execute_opcode_3XNN(int16_t opcode);
         void execute_opcode_4XNN(int16_t opcode);
         void execute_opcode_5XY0(int16_t opcode);
@@ -56,12 +56,12 @@ namespace chip8
         void execute_opcode_FX18(int16_t opcode, cTimer* sound_timer);
         void execute_opcode_FX1E(int16_t opcode);
         void execute_opcode_FX29(int16_t opcode);
-        void execute_opcode_FX33(int16_t opcode);
+        void execute_opcode_FX33(int16_t opcode, cRam* ram);
         void execute_opcode_FX55(int16_t opcode, cRam* ram);
         void execute_opcode_FX65(int16_t opcode, cRam* ram);
 
-        int16_t              _program_counter;
-        int16_t              _register_i;
+        uint16_t             _program_counter;
+        uint16_t             _register_i;
         std::vector<uint8_t> _registers;
     };
 }
