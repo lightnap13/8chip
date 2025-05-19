@@ -55,7 +55,7 @@ namespace chip8
         void execute_opcode_FX15(int16_t opcode, cTimer* delay_timer);
         void execute_opcode_FX18(int16_t opcode, cTimer* sound_timer);
         void execute_opcode_FX1E(int16_t opcode);
-        void execute_opcode_FX29(int16_t opcode);
+        void execute_opcode_FX29(int16_t opcode, cRam* ram);
         void execute_opcode_FX33(int16_t opcode, cRam* ram);
         void execute_opcode_FX55(int16_t opcode, cRam* ram);
         void execute_opcode_FX65(int16_t opcode, cRam* ram);

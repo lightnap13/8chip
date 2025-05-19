@@ -45,8 +45,127 @@ namespace chip8
             std::cout << "[WARNING] File has completely filed ram. Might indicate ROM size too big" << std::endl;
         }
 
+        init_font();
+
         std::cout << "[DEBUG] Ram has been sucessfully filled" << std::endl;
         return 0;
+    }
+
+    void cRam::init_font()
+    {
+        size_t index {FONT_START_LOCATION};
+
+        // 0.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1111 << 4;
+
+        // 1.
+        _ram[index++] = 0b0010 << 4;
+        _ram[index++] = 0b0110 << 4;
+        _ram[index++] = 0b0010 << 4;
+        _ram[index++] = 0b0010 << 4;
+        _ram[index++] = 0b0111 << 4;
+
+        // 2.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1111 << 4;
+
+        // 3.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b0111 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b1111 << 4;
+
+        // 4.
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b0001 << 4;
+
+        // 5.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b1111 << 4;
+
+        // 6.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1111 << 4;
+
+        // 7.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b0001 << 4;
+
+        // 8.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1111 << 4;
+
+        // 9.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b0001 << 4;
+        _ram[index++] = 0b0001 << 4;
+
+        // A.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1001 << 4;
+
+        // B.
+        _ram[index++] = 0b1110 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1110 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1110 << 4;
+
+        // C.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1111 << 4;
+
+        // D.
+        _ram[index++] = 0b1110 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1001 << 4;
+        _ram[index++] = 0b1110 << 4;
+
+        // E.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1111 << 4;
+
+        // F.
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1111 << 4;
+        _ram[index++] = 0b1000 << 4;
+        _ram[index++] = 0b1000 << 4;
     }
 
     int32_t cRam::size()
@@ -78,6 +197,14 @@ namespace chip8
         uint16_t value = _stack.back();
         _stack.pop_back();
         return value;
+    }
+
+    uint16_t cRam::get_font_char_position(uint8_t character)
+    {
+        assert(character <= 0xF);
+        uint32_t position = FONT_START_LOCATION + character * FONT_SIZE;
+        assert(position < _ram.size());
+        return static_cast<uint16_t>(position);
     }
 
     void cRam::print()

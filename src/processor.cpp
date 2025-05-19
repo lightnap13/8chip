@@ -261,7 +261,7 @@ namespace chip8
         }
         else if (nibble3 == 0x2 && nibble4 == 0x9)
         {
-            execute_opcode_FX29(opcode);
+            execute_opcode_FX29(opcode, ram);
         }
         else if (nibble3 == 0x3 && nibble4 == 0x3)
         {
@@ -588,14 +588,14 @@ namespace chip8
         }
     }
 
-    void cProcessor::execute_opcode_FX29(int16_t opcode)
+    void cProcessor::execute_opcode_FX29(int16_t opcode, cRam* ram)
     {
-        // TODO: This operation.
         // Okay so somewhere in memory are sprites for the characters 0-9 and A-F, in 4x5 font.
         // This instruction read the lowest nibble (half bit) of Vx and then sets I to the location
         // In memory where you can find the sprite for said character.
-        //
-        // Does not really require memory, just a table that says where these sprites are located.
+        uint8_t  character = opcode & 0xF;
+        uint16_t position = ram->get_font_char_position(character);
+        _register_i = position;
     }
 
     void cProcessor::execute_opcode_FX33(int16_t opcode, cRam* ram)
