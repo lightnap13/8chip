@@ -512,12 +512,33 @@ namespace chip8
 
     void cProcessor::execute_opcode_DXYN(int16_t opcode, cRam* ram, cDisplay* display)
     {
-        // TODO: This operation.
         // draw(vx, vy, N). Draw a sprite at coordinate Vx, Vy
         // that has a width of 8 pixels and a height of N pixels.
         // Each row of 8 pixels is read as bit coded starting from memory location I.
         // I does no change.
         // Set VF to 1 if any bits are flipped from set to unset when drawing, 0 if that does not happen.
+
+        size_t  register_index_x = (opcode >> 8) & 0x0F;
+        uint8_t register_content_x = _registers[register_index_x];
+        size_t  register_index_y = (opcode >> 4) & 0x0F;
+        uint8_t register_content_y = _registers[register_index_y];
+
+        uint8_t sprite_start_x = register_content_x % display->get_width();
+        uint8_t sprite_start_y = register_content_y % display->get_height();
+
+        uint8_t sprite_height = opcode & 0xF;
+
+        bool flipped_any_bit {false};
+
+        for (uint8_t i {0}; i <= sprite_height; i++)
+        {
+            uint8_t sprite_row = ram->read(_register_i + i);
+            bool    row_flipped_any_bit {false};
+            display->draw_byte(sprite_start_x, sprite_start_y + i, sprite_row, &row_flipped_any_bit);
+            flipped_any_bit |= row_flipped_any_bit;
+        }
+
+        _registers[15] = flipped_any_bit ? 1 : 0;
     }
 
     void cProcessor::execute_opcode_EX9E(int16_t opcode, cKeyboard* keyboard)

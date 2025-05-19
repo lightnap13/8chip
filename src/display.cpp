@@ -1,5 +1,6 @@
 #include "display.hpp"
 
+#include <algorithm>
 #include <iostream>
 
 namespace chip8
@@ -30,6 +31,51 @@ namespace chip8
         {
             _pixels[i] = 0;
         }
+    }
+
+    void cDisplay::draw_byte(uint8_t sprite_initial_x, uint8_t y, uint8_t byte, bool* flipped_bit)
+    {
+        // We don't draw past the edge of the screen.
+        if (y >= _height)
+        {
+            return;
+        }
+
+        bool flipped_any_bit = false;
+
+        // We don't draw past the edge of the screen.
+        uint8_t sprite_final_x = std::min(_width, sprite_initial_x + 8);
+        uint8_t sprite_width = sprite_final_x - sprite_initial_x;
+
+        for (uint8_t i = 0; i < sprite_width; i++)
+        {
+            uint8_t current_sprite_pixel = (byte >> (7 - i)) & 0b1;
+            size_t  current_display_location = y * _width + sprite_initial_x + i;
+            uint8_t current_display_pixel = static_cast<uint8_t>(_pixels[current_display_location]);
+
+            if (current_sprite_pixel && current_display_pixel)
+            {
+                flipped_any_bit = true;
+                _pixels[current_display_location] = 0;
+            }
+
+            if (current_sprite_pixel && !current_display_pixel)
+            {
+                _pixels[current_display_location] = 1;
+            }
+        }
+
+        *flipped_bit = flipped_any_bit;
+    }
+
+    int32_t cDisplay::get_height()
+    {
+        return _height;
+    }
+
+    int32_t cDisplay::get_width()
+    {
+        return _width;
     }
 
     void cDisplay::clear_terminal()

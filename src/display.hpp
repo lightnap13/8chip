@@ -21,6 +21,11 @@ namespace chip8
         void draw_frame();
         void clear_pixels();
 
+        void draw_byte(uint8_t sprite_initial_x, uint8_t y, uint8_t byte, bool* flipped_bit);
+
+        int32_t get_height();
+        int32_t get_width();
+
       private:
         void clear_terminal();
         void print_pixels();
