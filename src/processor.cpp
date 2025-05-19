@@ -551,10 +551,22 @@ namespace chip8
 
     void cProcessor::execute_opcode_FX0A(int16_t opcode, cKeyboard* keyboard)
     {
-        // TODO: This operation.
         // A key press is awaited, then stored in Vx
-        // Blocking operation, all instructions halted until next event
+        // If no key is pressed we decrement program counter as to execute this instruction again.
         // But sound and delay timers keep processing.
+        int8_t pressed_key = keyboard->await_key_press();
+
+        if (pressed_key == -1)
+        {
+            _program_counter -= 2;
+            return;
+        }
+        else
+        {
+            size_t register_index = (opcode >> 8) & 0x0F;
+            _registers[register_index] = static_cast<uint8_t>(pressed_key);
+            return;
+        }
     }
 
     void cProcessor::execute_opcode_FX15(int16_t opcode, cTimer* delay_timer)

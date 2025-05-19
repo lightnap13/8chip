@@ -8,8 +8,8 @@ namespace chip8
     class cKeyboard
     {
       public:
-        bool    is_key_pressed(uint8_t key_id);
-        uint8_t await_key_press();
+        bool   is_key_pressed(uint8_t key_id);
+        int8_t await_key_press();
     };
 }
 #endif // CHIP8_SRC_KEYBOARDHPP
