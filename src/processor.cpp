@@ -589,14 +589,14 @@ namespace chip8
         size_t register_index = (opcode >> 8) & 0x0F;
         _register_i += _registers[register_index];
 
-        if (_register_i >= 4096)
+        if (_register_i > RAM_SIZE)
         {
-            _register_i -= 4096;
+            _register_i -= (RAM_SIZE + 1);
         }
 
-        if (_register_i < 0)
+        if (_register_i < 0U)
         {
-            _register_i += 4096;
+            _register_i += (RAM_SIZE + 1);
         }
     }
 

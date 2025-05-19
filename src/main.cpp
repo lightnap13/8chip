@@ -27,8 +27,8 @@ int main()
 
     chip8::cKeyboard keyboard;
 
-    chip8::cTimer delay_timer;
-    chip8::cTimer sound_timer;
+    chip8::cTimer delay_timer {chip8::cTimer::eType::delay};
+    chip8::cTimer sound_timer {chip8::cTimer::eType::sound};
 
     chip8::cProcessor processor {chip8::PROGRAM_START_LOCATION, chip8::REGISTER_COUNT};
 

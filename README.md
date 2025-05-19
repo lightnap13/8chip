@@ -7,10 +7,11 @@ This project is still in development.
 
 
 **Future goals**
-- Implement instruction decoding
 - Implment all instructions
-- Implement the 2 timers
-- Make the project work
+- Implement the timers
+- Implement keyboard
+- Implement clock speed to decode instructions
+- Debug until project works
 - Make a graphical display instead of a terminal one. 
 
 
@@ -18,3 +19,4 @@ This project is still in development.
 - Implement the stack
 - Implement the ram
 - Implement an ascii display
+- Implement instruction decoding
