@@ -1,5 +1,6 @@
 #include "display.hpp"
 #include "keyboard.hpp"
+#include "log.hpp"
 #include "processor.hpp"
 #include "ram.hpp"
 #include "timer.hpp"
@@ -8,15 +9,19 @@
 #include <iostream>
 #include <unistd.h>
 
+constexpr int32_t MAX_INSTRUCTIONS = 20'000'000;
+
 int main()
 {
-
     std::srand(0); // TODO: Use actual random.
 
     chip8::cRam ram {chip8::RAM_SIZE, chip8::PROGRAM_START_LOCATION};
 
-    if (ram.load_rom("../data/octojam6title.ch8") != 0)
+    constexpr char FILE_NAME[] = "../data/octojam6title.ch8";
+
+    if (ram.load_rom(FILE_NAME) != 0)
     {
+        thoth::error("Could load rom ", FILE_NAME);
         return EXIT_FAILURE;
     }
 
@@ -27,21 +32,25 @@ int main()
 
     chip8::cKeyboard keyboard;
 
-    chip8::cTimer delay_timer {chip8::cTimer::eType::delay};
-    chip8::cTimer sound_timer {chip8::cTimer::eType::sound};
+    constexpr float timer_period_ms {1000.0f / 60.0f};
+    chip8::cTimer   delay_timer {timer_period_ms};
+    chip8::cTimer   sound_timer {timer_period_ms};
 
     chip8::cProcessor processor {chip8::PROGRAM_START_LOCATION, chip8::REGISTER_COUNT};
 
-    for (int i = 0; i < 20; i++)
-    {
+    float instruction_period_s = (1.0f / chip8::INSTR_PER_SEC);
 
-        // display.draw_frame();
+    for (int i = 0; i < MAX_INSTRUCTIONS; i++)
+    {
+        display.draw_frame();
+        // thoth::info("[INFO] Frame number ", i);
         std::cout << "[INFO] Frame number " << i << std::endl;
         std::cout << "\n\n";
         processor.execute_next_instruction(&ram, &display, &keyboard, &delay_timer, &sound_timer);
 
         // ram.print();
-        sleep(1);
+        delay_timer.print();
+        sleep(instruction_period_s);
     }
 
     return EXIT_SUCCESS;

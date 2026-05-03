@@ -8,10 +8,10 @@ namespace thoth
 {
     const std::unordered_map<eLevel, const char*> level_to_str {{eLevel::trace, "[TRACE]"},
                                                                 {eLevel::debug, "[DEBUG]"},
-                                                                {eLevel::info, "[INFO]"},
-                                                                {eLevel::warning, "[ WARN]"},
+                                                                {eLevel::info, "[INFO_]"},
+                                                                {eLevel::warning, "[WARN_]"},
                                                                 {eLevel::error, "[ERROR]"},
-                                                                {eLevel::critical, "[ CRIT]"},
+                                                                {eLevel::critical, "[CRTCL]"},
                                                                 {eLevel::fatal, "[FATAL]"}};
 
     void log(eLevel level, const char* message, ...);
@@ -57,10 +57,12 @@ namespace thoth
         va_end(argp);
     }
 
+    // TODO: Variadic arguments not getting pritned.
     void log(eLevel level, const char* message, std::va_list arguments)
     {
-        std::printf("%s", level_to_str.at(level));
+        std::printf("%s ", level_to_str.at(level));
         std::vfprintf(stdout, message, arguments);
+        std::printf("\n");
     }
 
 }

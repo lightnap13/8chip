@@ -25,7 +25,7 @@ namespace chip8
 
     int32_t cRam::load_rom(std::string path)
     {
-        std::cout << "[ INFO] Loading rom " << path << "\n";
+        thoth::info("Loading rom", path.c_str());
 
         std::ifstream file {path, std::ios::binary | std::ios::in};
         if (!file.is_open())
@@ -33,7 +33,7 @@ namespace chip8
             return -1;
         }
 
-        std::cout << "[ INFO] ROM was loaded correctly" << std::endl;
+        thoth::info("ROM was loaded correctly");
 
         uint64_t max_program_size {_ram.size() - _program_offset};
 
@@ -42,12 +42,12 @@ namespace chip8
         std::streamsize bytes_read = file.gcount();
         if (bytes_read >= max_program_size)
         {
-            std::cout << "[WARNING] File has completely filed ram. Might indicate ROM size too big" << std::endl;
+            thoth::warning("File has completely filed ram. Might indicate ROM size too big");
         }
 
         init_font();
 
-        std::cout << "[DEBUG] Ram has been sucessfully filled" << std::endl;
+        thoth::debug("Ram has been sucessfully initialised");
         return 0;
     }
 

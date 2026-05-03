@@ -7,6 +7,7 @@
 namespace chip8
 {
     constexpr int32_t REGISTER_COUNT = 16;
+    constexpr int32_t INSTR_PER_SEC = 700;
 
     class cDisplay;
     class cKeyboard;
