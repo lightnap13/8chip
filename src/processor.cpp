@@ -443,8 +443,8 @@ namespace chip8
         // Vx >>= 1. Store least significand bit of Vx prior to shift to VF.
         size_t  register_index = (opcode >> 8) & 0x0F;
         uint8_t register_content = _registers[register_index];
-        _registers[15] = register_content & 0x01;
         _registers[register_index] = register_content >> 1;
+        _registers[15] = register_content & 0x01;
     }
 
     void cProcessor::execute_opcode_8XY7(uint16_t opcode)
@@ -472,8 +472,8 @@ namespace chip8
         // Vx <<= 1. Set Vf to 1 if most significanf bit of Vx prior to shift was set, to 0 otherwise.
         size_t  register_index = (opcode >> 8) & 0x0F;
         uint8_t register_content = _registers[register_index];
-        _registers[15] = (register_content & 0x80) >> 7;
         _registers[register_index] = register_content << 1;
+        _registers[15] = (register_content & 0x80) >> 7;
     }
 
     void cProcessor::execute_opcode_9XY0(uint16_t opcode)
