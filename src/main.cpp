@@ -9,56 +9,46 @@
 #include <iostream>
 #include <unistd.h>
 
-constexpr int32_t MAX_INSTRUCTIONS = 20'000'000;
+constexpr int64_t MAX_INSTRUCTIONS = 20'000'000;
+constexpr double  TIMER_PERIOD_MS {1000.0f / 60.0f};
+constexpr double  INSTRUCTION_PERIOD_S {1.0f / chip8::INSTR_PER_SEC};
 
 int main(int argc, char** argv)
 {
     if (argc != 2)
     {
-        thoth::fatal("Expected 1 argument, %d were provided ", argc);
+        thoth::fatal("Expected 1 argument, %d were provided ", argc - 1);
         return EXIT_FAILURE;
     }
 
     std::srand(0); // TODO: Use actual random.
 
     chip8::cRam ram {chip8::RAM_SIZE, chip8::PROGRAM_START_LOCATION};
-
     if (ram.load_rom(argv[1]) != 0)
     {
         thoth::fatal("Could load rom: %s", argv[1]);
         return EXIT_FAILURE;
     }
 
-    ram.print();
-
-    chip8::cDisplay display {chip8::DISPLAY_HEIGHT, chip8::DISPLAY_WIDTH};
-    // display.clear_pixels();
-
-    chip8::cKeyboard keyboard;
-
-    constexpr float timer_period_ms {1000.0f / 60.0f};
-    chip8::cTimer   delay_timer {timer_period_ms};
-    chip8::cTimer   sound_timer {timer_period_ms};
-
+    chip8::cDisplay   display {chip8::DISPLAY_HEIGHT, chip8::DISPLAY_WIDTH};
+    chip8::cKeyboard  keyboard;
+    chip8::cTimer     delay_timer {TIMER_PERIOD_MS};
+    chip8::cTimer     sound_timer {TIMER_PERIOD_MS};
     chip8::cProcessor processor {chip8::PROGRAM_START_LOCATION, chip8::REGISTER_COUNT};
 
-    constexpr float instruction_period_s {1.0f / chip8::INSTR_PER_SEC};
-
-    for (int i = 0; i < MAX_INSTRUCTIONS; i++)
+    for (int64_t instruction_count {0L}; instruction_count < MAX_INSTRUCTIONS; instruction_count++)
     {
         display.draw_frame();
-        thoth::info("Frame number %d\n", i);
+        thoth::info("Instruction number %d\n", instruction_count);
         processor.execute_next_instruction(&ram, &display, &keyboard, &delay_timer, &sound_timer);
 
-        if (sound_timer.get_time() == 0)
+        if (sound_timer.get_time() != 0)
         {
             // TODO: Make beep timer actually make a sound
             std::cout << "BEEEEP!\n";
         }
 
-        // ram.print();
-        // delay_timer.print();
-        sleep(instruction_period_s);
+        sleep(INSTRUCTION_PERIOD_S);
     }
 
     return EXIT_SUCCESS;
