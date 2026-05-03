@@ -86,7 +86,7 @@ namespace chip8
     void cDisplay::print_pixels()
     {
         std::string ascii_display {};
-        ascii_display.reserve(_height * _width + _height);
+        ascii_display.reserve((std::max(sizeof(EMPTY_PIXEL_CHAR), sizeof(FULL_PIXEL_CHAR)) - 1) * (_height * _width + _height));
 
         for (int y = 0; y < _height; y++)
         {

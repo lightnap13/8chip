@@ -10,8 +10,8 @@ namespace chip8
     constexpr int32_t DISPLAY_WIDTH = 64;
     constexpr int32_t DISPLAY_HEIGHT = 32;
 
-    constexpr char EMPTY_PIXEL_CHAR = '.';
-    constexpr char FULL_PIXEL_CHAR = '#';
+    constexpr char EMPTY_PIXEL_CHAR[] = " ";
+    constexpr char FULL_PIXEL_CHAR[] = "\u2588";
 
     class cDisplay
     {
