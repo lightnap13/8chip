@@ -531,7 +531,7 @@ namespace chip8
 
         bool flipped_any_bit {false};
 
-        for (uint8_t i {0}; i <= sprite_height; i++)
+        for (uint8_t i {0}; i < sprite_height; i++)
         {
             uint8_t sprite_row = ram->read(_register_i + i);
             bool    row_flipped_any_bit {false};

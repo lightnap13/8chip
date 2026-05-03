@@ -42,7 +42,7 @@ int main(int argc, char** argv)
 
     chip8::cProcessor processor {chip8::PROGRAM_START_LOCATION, chip8::REGISTER_COUNT};
 
-    constexpr float instruction_period_s = (1.0f / chip8::INSTR_PER_SEC);
+    constexpr float instruction_period_s {1.0f / chip8::INSTR_PER_SEC};
 
     for (int i = 0; i < MAX_INSTRUCTIONS; i++)
     {
