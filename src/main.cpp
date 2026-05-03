@@ -38,18 +38,23 @@ int main()
 
     chip8::cProcessor processor {chip8::PROGRAM_START_LOCATION, chip8::REGISTER_COUNT};
 
-    float instruction_period_s = (1.0f / chip8::INSTR_PER_SEC);
+    constexpr float instruction_period_s = (1.0f / chip8::INSTR_PER_SEC);
 
     for (int i = 0; i < MAX_INSTRUCTIONS; i++)
     {
         display.draw_frame();
         // thoth::info("[INFO] Frame number ", i);
-        std::cout << "[INFO] Frame number " << i << std::endl;
-        std::cout << "\n\n";
+        std::cout << "[INFO] Frame number " << i << "\n\n";
         processor.execute_next_instruction(&ram, &display, &keyboard, &delay_timer, &sound_timer);
 
+        if (sound_timer.get_time() == 0)
+        {
+            // TODO: Make beep timer actually make a sound
+            std::cout << "BEEEEP!\n";
+        }
+
         // ram.print();
-        delay_timer.print();
+        // delay_timer.print();
         sleep(instruction_period_s);
     }
 
