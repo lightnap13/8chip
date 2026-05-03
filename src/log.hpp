@@ -1,8 +1,6 @@
 #ifndef CHIP8_SRC_LOGHPP
 #define CHIP8_SRC_LOGHPP
 
-#include <string>
-
 namespace thoth
 {
 

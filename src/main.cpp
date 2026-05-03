@@ -11,17 +11,21 @@
 
 constexpr int32_t MAX_INSTRUCTIONS = 20'000'000;
 
-int main()
+int main(int argc, char** argv)
 {
+    if (argc != 2)
+    {
+        thoth::fatal("Expected 1 argument, ", argc, " were provided");
+        return EXIT_FAILURE;
+    }
+
     std::srand(0); // TODO: Use actual random.
 
     chip8::cRam ram {chip8::RAM_SIZE, chip8::PROGRAM_START_LOCATION};
 
-    constexpr char FILE_NAME[] = "../data/octojam6title.ch8";
-
-    if (ram.load_rom(FILE_NAME) != 0)
+    if (ram.load_rom(argv[1]) != 0)
     {
-        thoth::error("Could load rom ", FILE_NAME);
+        thoth::fatal("Could load rom ", argv[1]);
         return EXIT_FAILURE;
     }
 

@@ -49,6 +49,14 @@ namespace thoth
         va_end(argp);
     }
 
+    void fatal(const char* message, ...)
+    {
+        std::va_list argp;
+        va_start(argp, message);
+        log(eLevel::fatal, message, argp);
+        va_end(argp);
+    }
+
     void log(eLevel level, const char* message, ...)
     {
         std::va_list argp;
