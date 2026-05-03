@@ -15,23 +15,23 @@ namespace chip8
     class cRam
     {
       public:
-        cRam(int32_t size, int32_t program_offset);
+        cRam(int32_t size, int32_t program_offset) noexcept;
 
-        int32_t load_rom(std::string path);
-        void    clear();
-        void    print();
+        int32_t load_rom(std::string path) & noexcept;
+        void    clear() & noexcept;
+        void    print() const& noexcept;
 
-        int32_t size();
-        uint8_t read(int32_t index);
-        void    write(int32_t index, uint8_t value);
+        int32_t size() const& noexcept;
+        uint8_t read(int32_t index) const& noexcept;
+        void    write(int32_t index, uint8_t value) noexcept;
 
-        void     push_to_stack(uint16_t value);
-        uint16_t pop_from_stack();
+        void     push_to_stack(uint16_t value) & noexcept;
+        uint16_t pop_from_stack() & noexcept;
 
-        uint16_t get_font_char_position(uint8_t character);
+        uint16_t get_font_char_position(uint8_t character) & noexcept;
 
       private:
-        void init_font();
+        void init_font() & noexcept;
 
         int32_t               _program_offset;
         std::vector<uint8_t>  _ram;

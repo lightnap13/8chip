@@ -5,35 +5,28 @@
 
 namespace chip8
 {
-    cDisplay::cDisplay(int32_t height, int32_t width)
+    cDisplay::cDisplay(int32_t height, int32_t width) noexcept
+      : _height(height)
+      , _width(width)
+      , _pixels(_height * _width, false)
     {
-        _height = height;
-        _width = width;
-        _pixels.reserve(_height * _width);
-
-        for (uint32_t i = 0U; i < _width * _height; i++)
-        {
-            _pixels.push_back(0);
-        }
-
-        assert(_pixels.size() == _width * _height);
     }
 
-    void cDisplay::draw_frame()
+    void cDisplay::draw_frame() & noexcept
     {
         clear_terminal();
-        print_pixels();
+        present_frame();
     }
 
-    void cDisplay::clear_pixels()
+    void cDisplay::clear_frame() & noexcept
     {
         for (uint32_t i = 0U; i < _width * _height; i++)
         {
-            _pixels[i] = 0;
+            _pixels[i] = false;
         }
     }
 
-    void cDisplay::draw_byte(uint8_t sprite_initial_x, uint8_t y, uint8_t byte, bool* flipped_bit)
+    void cDisplay::draw_byte(uint8_t sprite_initial_x, uint8_t y, uint8_t byte, bool* flipped_bit) & noexcept
     {
         // We don't draw past the edge of the screen.
         if (y >= _height)
@@ -51,31 +44,31 @@ namespace chip8
         {
             size_t const pixel_index = y * _width + sprite_initial_x + i;
             bool const   old_pixel_value = (byte >> (7 - i) & 0b1) == 1;
-            bool const   new_pixel_value = _pixels[pixel_index] == 1;
+            bool const   new_pixel_value = _pixels[pixel_index];
 
             flipped_any_bit |= new_pixel_value && old_pixel_value;
-            _pixels[pixel_index] = new_pixel_value == old_pixel_value ? 0 : 1;
+            _pixels[pixel_index] = new_pixel_value != old_pixel_value;
         }
 
         *flipped_bit = flipped_any_bit;
     }
 
-    int32_t cDisplay::get_height()
+    int32_t cDisplay::get_height() const& noexcept
     {
         return _height;
     }
 
-    int32_t cDisplay::get_width()
+    int32_t cDisplay::get_width() const& noexcept
     {
         return _width;
     }
 
-    void cDisplay::clear_terminal()
+    void cDisplay::clear_terminal() const& noexcept
     {
         std::cout << "\e[1;1H\e[2J";
     }
 
-    void cDisplay::print_pixels()
+    void cDisplay::present_frame() const& noexcept
     {
         std::string ascii_display {};
         ascii_display.reserve((std::max(sizeof(EMPTY_PIXEL_CHAR), sizeof(FULL_PIXEL_CHAR)) - 1) * (_height * _width + _height));
@@ -84,8 +77,7 @@ namespace chip8
         {
             for (int x = 0; x < _width; x++)
             {
-                int current_pixel = _pixels[y * _width + x];
-                ascii_display += current_pixel == 0 ? EMPTY_PIXEL_CHAR : FULL_PIXEL_CHAR;
+                ascii_display += _pixels[y * _width + x] ? FULL_PIXEL_CHAR : EMPTY_PIXEL_CHAR;
             }
 
             ascii_display += '\n';

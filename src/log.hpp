@@ -32,13 +32,13 @@ namespace thoth
     // For now, we hide this function.
     // Who knows if we will need it some day.
     // void log(eLevel level, const char* message, ...);
-    void trace(const char* message, ...);
-    void debug(const char* message, ...);
-    void info(const char* message, ...);
-    void warning(const char* message, ...);
-    void error(const char* message, ...);
-    void critical(const char* message, ...);
-    void fatal(const char* message, ...);
+    void trace(const char* message, ...) noexcept;
+    void debug(const char* message, ...) noexcept;
+    void info(const char* message, ...) noexcept;
+    void warning(const char* message, ...) noexcept;
+    void error(const char* message, ...) noexcept;
+    void critical(const char* message, ...) noexcept;
+    void fatal(const char* message, ...) noexcept;
 }
 
 #endif // CHIP8_SRC_LOGHPP

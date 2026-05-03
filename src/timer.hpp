@@ -9,10 +9,10 @@ namespace chip8
     class cTimer
     {
       public:
-        explicit cTimer(double period);
-        uint8_t get_time() const;
-        void    set_time(uint8_t time);
-        void    print();
+        explicit cTimer(double period) noexcept;
+        uint8_t get_time() const& noexcept;
+        void    set_time(uint8_t time) & noexcept;
+        void    print() const& noexcept;
 
       private:
         std::chrono::time_point<std::chrono::system_clock> _clock_start_time {};

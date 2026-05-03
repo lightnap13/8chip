@@ -9,31 +9,38 @@
 #include <assert.h>
 #include <cstdio>
 
-namespace chip8
+namespace
 {
-    cProcessor::cProcessor(int32_t program_start_location, int32_t register_count)
+    uint8_t inline get_nibble(uint16_t opcode, uint8_t nibble_index) noexcept
     {
-        _registers = std::vector<uint8_t>(register_count, 0U);
-        _register_i = 0U;
-        _program_counter = static_cast<int16_t>(program_start_location);
+        assert(0 <= nibble_index && nibble_index <= 3);
+        // Opcode = (Nibble3, Nibble2, Nibble1, Nibble0)
+        return (opcode >> 4 * nibble_index) & 0x000F;
     }
 
-    void cProcessor::execute_next_instruction(cRam* ram, cDisplay* display, cKeyboard* keyboard, cTimer* delay_timer, cTimer* sound_timer)
+}
+
+namespace chip8
+{
+    cProcessor::cProcessor(int32_t program_start_location, int32_t register_count) noexcept
+      : _program_counter(static_cast<int16_t>(program_start_location))
+      , _register_i(0U)
+      , _registers(register_count, 0U)
+    {
+    }
+
+    void cProcessor::execute_next_instruction(cRam* ram, cDisplay* display, cKeyboard* keyboard, cTimer* delay_timer, cTimer* sound_timer) & noexcept
     {
         assert(_program_counter < ram->size() - 1);
-        uint16_t instr_first_half = static_cast<uint16_t>(ram->read(_program_counter));
-        uint16_t instr_second_half = static_cast<uint16_t>(ram->read(_program_counter + 1));
-
-        uint16_t opcode = (instr_first_half << 8) | instr_second_half;
-
-        // Opcode = Nibble 1234
-        uint8_t nibble1 = (opcode >> 12) & 0x000F;
+        uint16_t const instr_first_half {static_cast<uint16_t>(ram->read(_program_counter))};
+        uint16_t const instr_second_half {static_cast<uint16_t>(ram->read(_program_counter + 1))};
+        uint16_t const opcode {static_cast<uint16_t>((instr_first_half << 8) | instr_second_half)};
 
         thoth::info("Executing instruction %04x at program counter=%d\n", opcode, _program_counter);
 
         _program_counter += 2;
 
-        switch (nibble1)
+        switch (get_nibble(opcode, 3))
         {
             case 0x00:
             {
@@ -127,20 +134,19 @@ namespace chip8
         }
     }
 
-    void cProcessor::execute_opcode_0XXX(uint16_t opcode, cRam* ram, cDisplay* display)
+    void cProcessor::execute_opcode_0XXX(uint16_t opcode, cRam* ram, cDisplay* display) & noexcept
     {
-        // Ignore 0NNNN for now
 
-        // Opcode = Nibble 1234
-        uint8_t nibble2 = (opcode >> 8) & 0x000F;
-        uint8_t nibble3 = (opcode >> 4) & 0x000F;
-        uint8_t nibble4 = opcode & 0x000F;
+        uint8_t const nibble2 {get_nibble(opcode, 2)};
+        uint8_t const nibble1 {get_nibble(opcode, 1)};
+        uint8_t const nibble0 {get_nibble(opcode, 0)};
 
-        if (nibble2 == 0x0 && nibble3 == 0xE && nibble4 == 0xE)
+        // Ignore 0NNN for now
+        if (nibble2 == 0x0 && nibble1 == 0xE && nibble0 == 0xE)
         {
             execute_opcode_00EE(opcode, ram);
         }
-        else if (nibble2 == 0x0 && nibble3 == 0xE && nibble4 == 0x0)
+        else if (nibble2 == 0x0 && nibble1 == 0xE && nibble0 == 0x0)
         {
             execute_opcode_00E0(opcode, display);
         }
@@ -151,12 +157,9 @@ namespace chip8
         }
     }
 
-    void cProcessor::execute_opcode_8XXX(uint16_t opcode)
+    void cProcessor::execute_opcode_8XXX(uint16_t opcode) & noexcept
     {
-        // Opcode = Nibble 1234
-        uint8_t nibble4 = opcode & 0x000F;
-
-        switch (nibble4)
+        switch (get_nibble(opcode, 0))
         {
             case 0x00:
             {
@@ -213,17 +216,16 @@ namespace chip8
         }
     }
 
-    void cProcessor::execute_opcode_EXXX(uint16_t opcode, cKeyboard* keyboard)
+    void cProcessor::execute_opcode_EXXX(uint16_t opcode, cKeyboard* keyboard) & noexcept
     {
-        // Opcode = Nibble 1234
-        uint8_t nibble3 = (opcode >> 4) & 0x000F;
-        uint8_t nibble4 = opcode & 0x000F;
+        uint8_t const nibble1 {get_nibble(opcode, 1)};
+        uint8_t const nibble0 {get_nibble(opcode, 0)};
 
-        if (nibble3 == 0x9 && nibble4 == 0xE)
+        if (nibble1 == 0x9 && nibble0 == 0xE)
         {
             execute_opcode_EX9E(opcode, keyboard);
         }
-        else if (nibble3 == 0xA && nibble4 == 0x1)
+        else if (nibble1 == 0xA && nibble0 == 0x1)
         {
             execute_opcode_EXA1(opcode, keyboard);
         }
@@ -234,45 +236,44 @@ namespace chip8
         }
     }
 
-    void cProcessor::execute_opcode_FXXX(uint16_t opcode, cRam* ram, cKeyboard* keyboard, cTimer* delay_timer, cTimer* sound_timer)
+    void cProcessor::execute_opcode_FXXX(uint16_t opcode, cRam* ram, cKeyboard* keyboard, cTimer* delay_timer, cTimer* sound_timer) & noexcept
     {
-        // Opcode = Nibble 1234
-        uint8_t nibble3 = (opcode >> 4) & 0x000F;
-        uint8_t nibble4 = opcode & 0x000F;
+        uint8_t const nibble1 {get_nibble(opcode, 1)};
+        uint8_t const nibble0 {get_nibble(opcode, 0)};
 
-        if (nibble3 == 0x0 && nibble4 == 0x7)
+        if (nibble1 == 0x0 && nibble0 == 0x7)
         {
             execute_opcode_FX07(opcode, delay_timer);
         }
-        else if (nibble3 == 0x0 && nibble4 == 0xA)
+        else if (nibble1 == 0x0 && nibble0 == 0xA)
         {
             execute_opcode_FX0A(opcode, keyboard);
         }
-        else if (nibble3 == 0x1 && nibble4 == 0x5)
+        else if (nibble1 == 0x1 && nibble0 == 0x5)
         {
             execute_opcode_FX15(opcode, delay_timer);
         }
-        else if (nibble3 == 0x1 && nibble4 == 0x8)
+        else if (nibble1 == 0x1 && nibble0 == 0x8)
         {
             execute_opcode_FX18(opcode, sound_timer);
         }
-        else if (nibble3 == 0x1 && nibble4 == 0xE)
+        else if (nibble1 == 0x1 && nibble0 == 0xE)
         {
             execute_opcode_FX1E(opcode);
         }
-        else if (nibble3 == 0x2 && nibble4 == 0x9)
+        else if (nibble1 == 0x2 && nibble0 == 0x9)
         {
             execute_opcode_FX29(opcode, ram);
         }
-        else if (nibble3 == 0x3 && nibble4 == 0x3)
+        else if (nibble1 == 0x3 && nibble0 == 0x3)
         {
             execute_opcode_FX33(opcode, ram);
         }
-        else if (nibble3 == 0x5 && nibble4 == 0x5)
+        else if (nibble1 == 0x5 && nibble0 == 0x5)
         {
             execute_opcode_FX55(opcode, ram);
         }
-        else if (nibble3 == 0x6 && nibble4 == 0x5)
+        else if (nibble1 == 0x6 && nibble0 == 0x5)
         {
             execute_opcode_FX65(opcode, ram);
         }
@@ -283,334 +284,249 @@ namespace chip8
         }
     }
 
-    void cProcessor::execute_opcode_00E0(uint16_t opcode, cDisplay* display)
+    void cProcessor::execute_opcode_00E0(uint16_t opcode, cDisplay* display) & noexcept
     {
         // Clears screen.
-        display->clear_pixels();
+        display->clear_frame();
     }
 
-    void cProcessor::execute_opcode_00EE(uint16_t opcode, cRam* ram)
+    void cProcessor::execute_opcode_00EE(uint16_t opcode, cRam* ram) & noexcept
     {
         // Return from function
         _program_counter = ram->pop_from_stack();
     }
 
-    void cProcessor::execute_opcode_1NNN(uint16_t opcode)
+    void cProcessor::execute_opcode_1NNN(uint16_t opcode) & noexcept
     {
         // Jumps to NNN.
-        uint16_t jump_position = opcode & 0x0FFF;
-        _program_counter = jump_position;
+        _program_counter = opcode & 0x0FFF;
     }
 
-    void cProcessor::execute_opcode_2NNN(uint16_t opcode, cRam* ram)
+    void cProcessor::execute_opcode_2NNN(uint16_t opcode, cRam* ram) & noexcept
     {
         // Calls subroutine at NNN
-        uint16_t jump_position = opcode & 0x0FFF;
         ram->push_to_stack(_program_counter);
-        _program_counter = jump_position;
+        _program_counter = opcode & 0x0FFF;
     }
 
-    void cProcessor::execute_opcode_3XNN(uint16_t opcode)
+    void cProcessor::execute_opcode_3XNN(uint16_t opcode) & noexcept
     {
         // If vx == NN, skip next instruction
-        size_t  register_index = (opcode >> 8) & 0x0F;
-        uint8_t register_content = _registers[register_index];
-        uint8_t constant = opcode & 0xFF;
-        if (register_content == constant)
+        if (_registers[get_nibble(opcode, 2)] == (opcode & 0xFF))
         {
             _program_counter += 2U;
         }
     }
 
-    void cProcessor::execute_opcode_4XNN(uint16_t opcode)
+    void cProcessor::execute_opcode_4XNN(uint16_t opcode) & noexcept
     {
         // If vx != NN, skip the next instruction
-        size_t  register_index = (opcode >> 8) & 0x0F;
-        uint8_t register_content = _registers[register_index];
-        uint8_t constant = opcode & 0xFF;
-        if (register_content != constant)
+        if (_registers[get_nibble(opcode, 2)] != (opcode & 0xFF))
         {
             _program_counter += 2U;
         }
     }
 
-    void cProcessor::execute_opcode_5XY0(uint16_t opcode)
+    void cProcessor::execute_opcode_5XY0(uint16_t opcode) & noexcept
     {
         // Skip next instruction if Vx == Vy
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        uint8_t register_content_x = _registers[register_index_x];
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        if (register_content_x == register_content_y)
+        if (_registers[get_nibble(opcode, 1)] == _registers[get_nibble(opcode, 2)])
         {
             _program_counter += 2U;
         }
     }
 
-    void cProcessor::execute_opcode_6XNN(uint16_t opcode)
+    void cProcessor::execute_opcode_6XNN(uint16_t opcode) & noexcept
     {
         // Set VX to NN
-        size_t  register_index = (opcode >> 8) & 0x0F;
-        uint8_t constant = opcode & 0xFF;
-        _registers[register_index] = constant;
+        _registers[get_nibble(opcode, 2)] = (opcode & 0xFF);
     }
 
-    void cProcessor::execute_opcode_7XNN(uint16_t opcode)
+    void cProcessor::execute_opcode_7XNN(uint16_t opcode) & noexcept
     {
         // Adds NN to Vx (carry flag is not changed)
-        size_t  register_index = (opcode >> 8) & 0x0F;
-        uint8_t constant = opcode & 0xFF;
-        _registers[register_index] += constant;
+        _registers[get_nibble(opcode, 2)] += (opcode & 0xFF);
     }
 
-    void cProcessor::execute_opcode_8XY0(uint16_t opcode)
+    void cProcessor::execute_opcode_8XY0(uint16_t opcode) & noexcept
     {
         // Vx = Vy
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        _registers[register_index_x] = register_content_y;
+        _registers[get_nibble(opcode, 2)] = _registers[get_nibble(opcode, 1)];
     }
 
-    void cProcessor::execute_opcode_8XY1(uint16_t opcode)
+    void cProcessor::execute_opcode_8XY1(uint16_t opcode) & noexcept
     {
         // Vx |= Vy
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        _registers[register_index_x] |= register_content_y;
+        _registers[get_nibble(opcode, 2)] |= _registers[get_nibble(opcode, 1)];
     }
 
-    void cProcessor::execute_opcode_8XY2(uint16_t opcode)
+    void cProcessor::execute_opcode_8XY2(uint16_t opcode) & noexcept
     {
         // Vx &= Vy
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        _registers[register_index_x] &= register_content_y;
+        _registers[get_nibble(opcode, 2)] &= _registers[get_nibble(opcode, 1)];
     }
 
-    void cProcessor::execute_opcode_8XY3(uint16_t opcode)
+    void cProcessor::execute_opcode_8XY3(uint16_t opcode) & noexcept
     {
         // Vx ^= Vy
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        _registers[register_index_x] ^= register_content_y;
+        _registers[get_nibble(opcode, 2)] ^= _registers[get_nibble(opcode, 1)];
     }
 
-    void cProcessor::execute_opcode_8XY4(uint16_t opcode)
+    void cProcessor::execute_opcode_8XY4(uint16_t opcode) & noexcept
     {
         // Vx += Vy. Set VF to 1 if there is overflow, to 0 if not.
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        uint8_t register_content_x = _registers[register_index_x];
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        uint8_t sum = register_content_x + register_content_y;
+        size_t const  register_index_x {get_nibble(opcode, 2)};
+        uint8_t const register_content_x {_registers[register_index_x]};
+        uint8_t const sum {static_cast<uint8_t>(register_content_x + _registers[get_nibble(opcode, 1)])};
         _registers[register_index_x] = sum;
-        if (sum < register_content_x)
-        {
-            _registers[15] = 1;
-        }
-        else
-        {
-            _registers[15] = 0;
-        }
+        _registers[15] = sum < register_content_x ? 1 : 0; // TODO: This overflow check does not work, does it?
     }
 
-    void cProcessor::execute_opcode_8XY5(uint16_t opcode)
+    void cProcessor::execute_opcode_8XY5(uint16_t opcode) & noexcept
     {
         // Vx -= Vy. Vf set to 0 if there is underflow, to 0 if not (VF set to 1 if Vx >= Vy)
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        uint8_t register_content_x = _registers[register_index_x];
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        uint8_t diff = register_content_x - register_content_y;
-        _registers[register_index_x] = diff;
-
-        if (register_content_x >= register_content_y)
-        {
-            _registers[15] = 1;
-        }
-        else
-        {
-            _registers[15] = 0;
-        }
+        size_t const  register_index_x {get_nibble(opcode, 2)};
+        uint8_t const register_content_x {_registers[register_index_x]};
+        uint8_t const register_content_y {_registers[get_nibble(opcode, 1)]};
+        _registers[register_index_x] = register_content_x - register_content_y;
+        _registers[15] = register_content_x >= register_content_y ? 1 : 0;
     }
 
-    void cProcessor::execute_opcode_8XY6(uint16_t opcode)
+    void cProcessor::execute_opcode_8XY6(uint16_t opcode) & noexcept
     {
         // Vx >>= 1. Store least significand bit of Vx prior to shift to VF.
-        size_t  register_index = (opcode >> 8) & 0x0F;
-        uint8_t register_content = _registers[register_index];
+        size_t const  register_index {get_nibble(opcode, 2)};
+        uint8_t const register_content {_registers[register_index]};
         _registers[register_index] = register_content >> 1;
         _registers[15] = register_content & 0x01;
     }
 
-    void cProcessor::execute_opcode_8XY7(uint16_t opcode)
+    void cProcessor::execute_opcode_8XY7(uint16_t opcode) & noexcept
     {
         // Vx = Vy - Vx. Vf set to 0 if Vy >= Vx, to 1 otherwise.
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        uint8_t register_content_x = _registers[register_index_x];
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        uint8_t diff = register_content_y - register_content_x;
-        _registers[register_index_x] = diff;
-
-        if (register_content_y >= register_content_x)
-        {
-            _registers[15] = 1;
-        }
-        else
-        {
-            _registers[15] = 0;
-        }
+        size_t const  register_index_x {get_nibble(opcode, 2)};
+        uint8_t const register_content_x {_registers[register_index_x]};
+        uint8_t const register_content_y {_registers[get_nibble(opcode, 1)]};
+        _registers[register_index_x] = register_content_y - register_content_x;
+        _registers[15] = register_content_y >= register_content_x ? 1 : 0;
     }
 
-    void cProcessor::execute_opcode_8XYE(uint16_t opcode)
+    void cProcessor::execute_opcode_8XYE(uint16_t opcode) & noexcept
     {
         // Vx <<= 1. Set Vf to 1 if most significanf bit of Vx prior to shift was set, to 0 otherwise.
-        size_t  register_index = (opcode >> 8) & 0x0F;
-        uint8_t register_content = _registers[register_index];
+        size_t const  register_index {get_nibble(opcode, 2)};
+        uint8_t const register_content {_registers[register_index]};
         _registers[register_index] = register_content << 1;
         _registers[15] = (register_content & 0x80) >> 7;
     }
 
-    void cProcessor::execute_opcode_9XY0(uint16_t opcode)
+    void cProcessor::execute_opcode_9XY0(uint16_t opcode) & noexcept
     {
         // Skip next instruction if Vx != Vy
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        uint8_t register_content_x = _registers[register_index_x];
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-        if (register_content_x != register_content_y)
+        if (_registers[get_nibble(opcode, 1)] != _registers[get_nibble(opcode, 2)])
         {
             _program_counter += 2U;
         }
     }
 
-    void cProcessor::execute_opcode_ANNN(uint16_t opcode)
+    void cProcessor::execute_opcode_ANNN(uint16_t opcode) & noexcept
     {
         // I = NNN
-        uint16_t constant = opcode & 0x0FFF;
-        _register_i = constant;
+        _register_i = opcode & 0x0FFF;
     }
 
-    void cProcessor::execute_opcode_BNNN(uint16_t opcode)
+    void cProcessor::execute_opcode_BNNN(uint16_t opcode) & noexcept
     {
         // PC = V0 + NNN
-        uint16_t constant = opcode & 0x0FFF;
-        _program_counter = static_cast<uint16_t>(_registers[0]) + constant;
+        _program_counter = static_cast<uint16_t>(_registers[0]) + (opcode & 0x0FFF);
     }
 
-    void cProcessor::execute_opcode_CXNN(uint16_t opcode)
+    void cProcessor::execute_opcode_CXNN(uint16_t opcode) & noexcept
     {
         // Vx = rand(0,255) & NN
-        uint8_t constant = opcode & 0x00FF;
-        size_t  register_index = (opcode >> 8) & 0x0F;
-        _registers[register_index] = static_cast<uint8_t>((rand() % 255)) & constant;
+        _registers[get_nibble(opcode, 2)] = static_cast<uint8_t>((rand() % 255)) & (opcode & 0x00FF);
     }
 
-    void cProcessor::execute_opcode_DXYN(uint16_t opcode, cRam* ram, cDisplay* display)
+    void cProcessor::execute_opcode_DXYN(uint16_t opcode, cRam* ram, cDisplay* display) & noexcept
     {
         // draw(vx, vy, N). Draw a sprite at coordinate Vx, Vy
         // that has a width of 8 pixels and a height of N pixels.
         // Each row of 8 pixels is read as bit coded starting from memory location I.
         // I does no change.
         // Set VF to 1 if any bits are flipped from set to unset when drawing, 0 if that does not happen.
-
-        size_t  register_index_x = (opcode >> 8) & 0x0F;
-        uint8_t register_content_x = _registers[register_index_x];
-        size_t  register_index_y = (opcode >> 4) & 0x0F;
-        uint8_t register_content_y = _registers[register_index_y];
-
-        uint8_t sprite_start_x = register_content_x % display->get_width();
-        uint8_t sprite_start_y = register_content_y % display->get_height();
-
-        uint8_t sprite_height = opcode & 0xF;
+        uint8_t const sprite_start_x {static_cast<uint8_t>(_registers[get_nibble(opcode, 2)] % display->get_width())};
+        uint8_t const sprite_start_y {static_cast<uint8_t>(_registers[get_nibble(opcode, 1)] % display->get_height())};
 
         bool flipped_any_bit {false};
 
-        for (uint8_t i {0}; i < sprite_height; i++)
+        for (uint8_t row {0}; row < get_nibble(opcode, 0); row++)
         {
-            uint8_t sprite_row = ram->read(_register_i + i);
-            bool    row_flipped_any_bit {false};
-            display->draw_byte(sprite_start_x, sprite_start_y + i, sprite_row, &row_flipped_any_bit);
+            bool row_flipped_any_bit {false};
+
+            display->draw_byte(sprite_start_x, sprite_start_y + row, ram->read(_register_i + row), &row_flipped_any_bit);
             flipped_any_bit |= row_flipped_any_bit;
         }
 
-        _registers[15] = flipped_any_bit ? 1 : 0;
+        _registers[15] = flipped_any_bit ? 1U : 0U;
     }
 
-    void cProcessor::execute_opcode_EX9E(uint16_t opcode, cKeyboard* keyboard)
+    void cProcessor::execute_opcode_EX9E(uint16_t opcode, cKeyboard* keyboard) & noexcept
     {
         // Skip next instruction if key stored in Vx (consider only lowest nibble (half-bit)) is pressed.
-        size_t register_index = (opcode >> 8) & 0x0F;
-        bool   key_pressed = keyboard->is_key_pressed(_registers[register_index]);
-        if (key_pressed)
+        if (keyboard->is_key_pressed(_registers[get_nibble(opcode, 2)]))
         {
             _program_counter += 2;
         }
     }
 
-    void cProcessor::execute_opcode_EXA1(uint16_t opcode, cKeyboard* keyboard)
+    void cProcessor::execute_opcode_EXA1(uint16_t opcode, cKeyboard* keyboard) & noexcept
     {
         // Skip next instruction if key stored in Vx (consider only lowest nibble (half-bit)) is NOT pressed.
-        size_t register_index = (opcode >> 8) & 0x0F;
-        bool   key_pressed = keyboard->is_key_pressed(_registers[register_index]);
-        if (!key_pressed)
+        if (!keyboard->is_key_pressed(_registers[get_nibble(opcode, 2)]))
         {
             _program_counter += 2;
         }
     }
 
-    void cProcessor::execute_opcode_FX07(uint16_t opcode, cTimer* delay_timer)
+    void cProcessor::execute_opcode_FX07(uint16_t opcode, cTimer* delay_timer) & noexcept
     {
         // Sets vx to the current value of the delay timer
-        size_t register_index = (opcode >> 8) & 0x0F;
-        _registers[register_index] = delay_timer->get_time();
+        _registers[get_nibble(opcode, 2)] = delay_timer->get_time();
     }
 
-    void cProcessor::execute_opcode_FX0A(uint16_t opcode, cKeyboard* keyboard)
+    void cProcessor::execute_opcode_FX0A(uint16_t opcode, cKeyboard* keyboard) & noexcept
     {
         // A key press is awaited, then stored in Vx
         // If no key is pressed we decrement program counter as to execute this instruction again.
         // But sound and delay timers keep processing.
-        int8_t pressed_key = keyboard->await_key_press();
-
-        if (pressed_key == -1)
+        if (int8_t const pressed_key {keyboard->await_key_press()}; -1 == pressed_key)
         {
             _program_counter -= 2;
-            return;
         }
         else
         {
-            size_t register_index = (opcode >> 8) & 0x0F;
-            _registers[register_index] = static_cast<uint8_t>(pressed_key);
-            return;
+            _registers[get_nibble(opcode, 2)] = static_cast<uint8_t>(pressed_key);
         }
     }
 
-    void cProcessor::execute_opcode_FX15(uint16_t opcode, cTimer* delay_timer)
+    void cProcessor::execute_opcode_FX15(uint16_t opcode, cTimer* delay_timer) & noexcept
     {
         // Sets delay timer to Vx
-        size_t register_index = (opcode >> 8) & 0x0F;
-        delay_timer->set_time(_registers[register_index]);
+        delay_timer->set_time(_registers[get_nibble(opcode, 2)]);
     }
 
-    void cProcessor::execute_opcode_FX18(uint16_t opcode, cTimer* sound_timer)
+    void cProcessor::execute_opcode_FX18(uint16_t opcode, cTimer* sound_timer) & noexcept
     {
         // Sets sound timer to Vx
-        size_t register_index = (opcode >> 8) & 0x0F;
-        sound_timer->set_time(_registers[register_index]);
+        sound_timer->set_time(_registers[get_nibble(opcode, 2)]);
     }
 
-    void cProcessor::execute_opcode_FX1E(uint16_t opcode)
+    void cProcessor::execute_opcode_FX1E(uint16_t opcode) & noexcept
     {
         // I += Vx. Vf is not affected.
-        size_t register_index = (opcode >> 8) & 0x0F;
-        _register_i += _registers[register_index];
+        _register_i += _registers[get_nibble(opcode, 2)];
 
+        // TODO: Surely this can be simplified with the modulo operator
         if (_register_i > RAM_SIZE)
         {
             _register_i -= (RAM_SIZE + 1);
@@ -622,48 +538,40 @@ namespace chip8
         }
     }
 
-    void cProcessor::execute_opcode_FX29(uint16_t opcode, cRam* ram)
+    void cProcessor::execute_opcode_FX29(uint16_t opcode, cRam* ram) & noexcept
     {
-        // Okay so somewhere in memory are sprites for the characters 0-9 and A-F, in 4x5 font.
+        // In a particular memory location are sprites for the characters 0-9 and A-F, in 4x5 font.
         // This instruction read the lowest nibble (half bit) of Vx and then sets I to the location
-        // In memory where you can find the sprite for said character.
-        uint8_t  character = opcode & 0xF;
-        uint16_t position = ram->get_font_char_position(character);
-        _register_i = position;
+        // in memory where you can find the sprite for said character.
+        _register_i = ram->get_font_char_position(get_nibble(opcode, 0));
     }
 
-    void cProcessor::execute_opcode_FX33(uint16_t opcode, cRam* ram)
+    void cProcessor::execute_opcode_FX33(uint16_t opcode, cRam* ram) & noexcept
     {
         // Takes the number in Vx. Reads it as in decimal. Like if Vx is OxE7 it considers it 231.
         // Then stores 231 in I, like it stores 2 in I, 3 in I+1 and 1 in I+2.
         // This is called binary coded decimal.
-        size_t  register_index = (opcode >> 8) & 0x0F;
-        uint8_t register_content = _registers[register_index];
-        uint8_t units = register_content % 10;
-        uint8_t tens = (register_content % 100) / 10;
-        uint8_t hundreds = register_content / 100;
-        ram->write(_register_i, hundreds);
-        ram->write(_register_i + 1, tens);
-        ram->write(_register_i + 2, units);
+        uint8_t register_content {_registers[get_nibble(opcode, 2)]};
+        ram->write(_register_i, register_content / 100);
+        ram->write(_register_i + 1, (register_content % 100) / 10);
+        ram->write(_register_i + 2, register_content % 10);
     }
 
-    void cProcessor::execute_opcode_FX55(uint16_t opcode, cRam* ram)
+    void cProcessor::execute_opcode_FX55(uint16_t opcode, cRam* ram) & noexcept
     {
         // Stores from V0 to Vx (including Vx) in memory, starting at adress I.
         // I is not modified.
-        size_t register_index = (opcode >> 8) & 0x0F;
-        for (size_t i {0U}; i <= register_index; i++)
+        for (size_t i {0U}; i <= get_nibble(opcode, 2); i++)
         {
             ram->write(_register_i + i, _registers[i]);
         }
     }
 
-    void cProcessor::execute_opcode_FX65(uint16_t opcode, cRam* ram)
+    void cProcessor::execute_opcode_FX65(uint16_t opcode, cRam* ram) & noexcept
     {
         // Fills V0 to Vx (including Vx) with values from memory, starting at adress I.
         // I is not modified.
-        size_t register_index = (opcode >> 8) & 0x0F;
-        for (size_t i {0U}; i <= register_index; i++)
+        for (size_t i {0U}; i <= get_nibble(opcode, 2); i++)
         {
             _registers[i] = ram->read(_register_i + i);
         }

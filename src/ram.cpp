@@ -8,14 +8,14 @@
 
 namespace chip8
 {
-    cRam::cRam(int32_t size, int32_t program_offset)
+    cRam::cRam(int32_t size, int32_t program_offset) noexcept
+      : _program_offset(program_offset)
+      , _ram(size, 0U)
+      , _stack()
     {
-        _stack.clear();
-        _program_offset = program_offset;
-        _ram = std::vector<uint8_t>(size, 0);
     }
 
-    void cRam::clear()
+    void cRam::clear() & noexcept
     {
         for (int32_t i = 0; i < _ram.size(); i++)
         {
@@ -23,24 +23,24 @@ namespace chip8
         }
     }
 
-    int32_t cRam::load_rom(std::string path)
+    int32_t cRam::load_rom(std::string path) & noexcept
     {
         thoth::info("Loading rom %s", path.c_str());
 
         std::ifstream file {path, std::ios::binary | std::ios::in};
         if (!file.is_open())
         {
+            thoth::error("Could not load file %s", path.c_str());
             return -1;
         }
 
         thoth::debug("ROM was loaded correctly");
 
-        uint64_t max_program_size {_ram.size() - _program_offset};
+        uint64_t const max_program_size {_ram.size() - _program_offset};
 
         file.read(reinterpret_cast<char*>(&_ram[_program_offset]), max_program_size);
 
-        std::streamsize bytes_read = file.gcount();
-        if (bytes_read >= max_program_size)
+        if (file.gcount() >= max_program_size)
         {
             thoth::warning("File has completely filed ram. Might indicate ROM size too big");
         }
@@ -51,167 +51,169 @@ namespace chip8
         return 0;
     }
 
-    void cRam::init_font()
+    void cRam::init_font() & noexcept
     {
         size_t index {FONT_START_LOCATION};
 
+        auto const push_nibble_to_ram = [&](const uint8_t nibble) noexcept { _ram[index++] = nibble << 4; };
+
         // 0.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1111 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1111);
 
         // 1.
-        _ram[index++] = 0b0010 << 4;
-        _ram[index++] = 0b0110 << 4;
-        _ram[index++] = 0b0010 << 4;
-        _ram[index++] = 0b0010 << 4;
-        _ram[index++] = 0b0111 << 4;
+        push_nibble_to_ram(0b0010);
+        push_nibble_to_ram(0b0110);
+        push_nibble_to_ram(0b0010);
+        push_nibble_to_ram(0b0010);
+        push_nibble_to_ram(0b0111);
 
         // 2.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1111 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1111);
 
         // 3.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b0111 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b1111 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b0111);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b1111);
 
         // 4.
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b0001 << 4;
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b0001);
 
         // 5.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b1111 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b1111);
 
         // 6.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1111 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1111);
 
         // 7.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b0001 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b0001);
 
         // 8.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1111 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1111);
 
         // 9.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b0001 << 4;
-        _ram[index++] = 0b0001 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b0001);
+        push_nibble_to_ram(0b0001);
 
         // A.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1001 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1001);
 
         // B.
-        _ram[index++] = 0b1110 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1110 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1110 << 4;
+        push_nibble_to_ram(0b1110);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1110);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1110);
 
         // C.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1111 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1111);
 
         // D.
-        _ram[index++] = 0b1110 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1001 << 4;
-        _ram[index++] = 0b1110 << 4;
+        push_nibble_to_ram(0b1110);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1001);
+        push_nibble_to_ram(0b1110);
 
         // E.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1111 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1111);
 
         // F.
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1111 << 4;
-        _ram[index++] = 0b1000 << 4;
-        _ram[index++] = 0b1000 << 4;
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1111);
+        push_nibble_to_ram(0b1000);
+        push_nibble_to_ram(0b1000);
     }
 
-    int32_t cRam::size()
+    int32_t cRam::size() const& noexcept
     {
         return _ram.size();
     }
 
-    uint8_t cRam::read(int32_t index)
+    uint8_t cRam::read(int32_t index) const& noexcept
     {
         assert(index < _ram.size());
         // std::printf("[TRACE] Reading ram in position %d result %02x\n", index, _ram[index]);
         return _ram[index];
     }
 
-    void cRam::write(int32_t index, uint8_t value)
+    void cRam::write(int32_t index, uint8_t value) noexcept
     {
         assert(index < _ram.size());
         _ram[index] = value;
     }
 
-    void cRam::push_to_stack(uint16_t value)
+    void cRam::push_to_stack(uint16_t value) & noexcept
     {
         _stack.push_back(value);
     }
 
-    uint16_t cRam::pop_from_stack()
+    uint16_t cRam::pop_from_stack() & noexcept
     {
         assert(_stack.size() > 0);
-        uint16_t value = _stack.back();
+        uint16_t const value = _stack.back();
         _stack.pop_back();
         return value;
     }
 
-    uint16_t cRam::get_font_char_position(uint8_t character)
+    uint16_t cRam::get_font_char_position(uint8_t character) & noexcept
     {
         assert(character <= 0xF);
-        uint32_t position = FONT_START_LOCATION + character * FONT_SIZE;
+        uint32_t const position = FONT_START_LOCATION + character * FONT_SIZE;
         assert(position < _ram.size());
         return static_cast<uint16_t>(position);
     }
 
-    void cRam::print()
+    void cRam::print() const& noexcept
     {
-        int32_t lines_width = 16; //  bytes per line.
-        int32_t number_segments = 2;
-        int32_t bytes_per_segment = lines_width / number_segments;
+        int32_t const lines_width = 16; //  bytes per line.
+        int32_t const number_segments = 2;
+        int32_t const bytes_per_segment = lines_width / number_segments;
 
         thoth::debug("Printing ram\n");
 
@@ -219,7 +221,7 @@ namespace chip8
         {
             for (int x = 0; x < lines_width; x++)
             {
-                uint8_t current_byte = _ram[y * lines_width + x];
+                const uint8_t current_byte = _ram[y * lines_width + x];
                 printf("%02x ", current_byte);
                 if ((x + 1) % bytes_per_segment == 0)
                 {

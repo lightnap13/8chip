@@ -14,10 +14,10 @@ namespace thoth
                                                                 {eLevel::critical, "[CRTCL]"},
                                                                 {eLevel::fatal, "[FATAL]"}};
 
-    void log(eLevel level, const char* message, ...);
-    void log(eLevel level, const char* message, std::va_list arguments);
+    void log(eLevel level, const char* message, ...) noexcept;
+    void log(eLevel level, const char* message, std::va_list arguments) noexcept;
 
-    void debug(const char* message, ...)
+    void debug(const char* message, ...) noexcept
     {
         std::va_list argp;
         va_start(argp, message);
@@ -25,7 +25,7 @@ namespace thoth
         va_end(argp);
     }
 
-    void info(const char* message, ...)
+    void info(const char* message, ...) noexcept
     {
         std::va_list argp;
         va_start(argp, message);
@@ -33,7 +33,7 @@ namespace thoth
         va_end(argp);
     }
 
-    void warning(const char* message, ...)
+    void warning(const char* message, ...) noexcept
     {
         std::va_list argp;
         va_start(argp, message);
@@ -41,7 +41,7 @@ namespace thoth
         va_end(argp);
     }
 
-    void error(const char* message, ...)
+    void error(const char* message, ...) noexcept
     {
         std::va_list argp;
         va_start(argp, message);
@@ -49,7 +49,7 @@ namespace thoth
         va_end(argp);
     }
 
-    void fatal(const char* message, ...)
+    void fatal(const char* message, ...) noexcept
     {
         std::va_list argp;
         va_start(argp, message);
@@ -57,7 +57,7 @@ namespace thoth
         va_end(argp);
     }
 
-    void log(eLevel level, const char* message, ...)
+    void log(eLevel level, const char* message, ...) noexcept
     {
         std::va_list argp;
         va_start(argp, message);
@@ -65,7 +65,7 @@ namespace thoth
         va_end(argp);
     }
 
-    void log(eLevel level, const char* message, std::va_list arguments)
+    void log(eLevel level, const char* message, std::va_list arguments) noexcept
     {
         std::printf("%s ", level_to_str.at(level));
         std::vfprintf(stdout, message, arguments);

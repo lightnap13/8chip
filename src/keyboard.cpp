@@ -2,13 +2,13 @@
 
 namespace chip8
 {
-    bool cKeyboard::is_key_pressed(uint8_t key_id)
+    bool cKeyboard::is_key_pressed(uint8_t key_id) const& noexcept
     {
         // TODO: Proper keyboard input.
         return false;
     }
 
-    int8_t cKeyboard::await_key_press()
+    int8_t cKeyboard::await_key_press() const& noexcept
     {
         // TODO: Proper keyboard input.
         // TODO: Return -1 when key not pressed. failure.

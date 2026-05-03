@@ -16,23 +16,23 @@ namespace chip8
     class cDisplay
     {
       public:
-        cDisplay(int32_t height, int32_t width);
+        cDisplay(int32_t height, int32_t width) noexcept;
 
-        void draw_frame();
-        void clear_pixels();
+        void draw_frame() & noexcept;
+        void clear_frame() & noexcept;
 
-        void draw_byte(uint8_t sprite_initial_x, uint8_t y, uint8_t byte, bool* flipped_bit);
+        void draw_byte(uint8_t sprite_initial_x, uint8_t y, uint8_t byte, bool* flipped_bit) & noexcept;
 
-        int32_t get_height();
-        int32_t get_width();
+        int32_t get_height() const& noexcept;
+        int32_t get_width() const& noexcept;
 
       private:
-        void clear_terminal();
-        void print_pixels();
+        void clear_terminal() const& noexcept;
+        void present_frame() const& noexcept;
 
-        int32_t              _height;
-        int32_t              _width;
-        std::vector<int32_t> _pixels;
+        int32_t           _height;
+        int32_t           _width;
+        std::vector<bool> _pixels;
     };
 }
 
