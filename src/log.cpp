@@ -65,7 +65,6 @@ namespace thoth
         va_end(argp);
     }
 
-    // TODO: Variadic arguments not getting pritned.
     void log(eLevel level, const char* message, std::va_list arguments)
     {
         std::printf("%s ", level_to_str.at(level));

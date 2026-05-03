@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 {
     if (argc != 2)
     {
-        thoth::fatal("Expected 1 argument, ", argc, " were provided");
+        thoth::fatal("Expected 1 argument, %d were provided ", argc);
         return EXIT_FAILURE;
     }
 
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
     if (ram.load_rom(argv[1]) != 0)
     {
-        thoth::fatal("Could load rom ", argv[1]);
+        thoth::fatal("Could load rom: %s", argv[1]);
         return EXIT_FAILURE;
     }
 
@@ -47,8 +47,7 @@ int main(int argc, char** argv)
     for (int i = 0; i < MAX_INSTRUCTIONS; i++)
     {
         display.draw_frame();
-        // thoth::info("[INFO] Frame number ", i);
-        std::cout << "[INFO] Frame number " << i << "\n\n";
+        thoth::info("Frame number %d\n", i);
         processor.execute_next_instruction(&ram, &display, &keyboard, &delay_timer, &sound_timer);
 
         if (sound_timer.get_time() == 0)

@@ -1,8 +1,8 @@
 #include "timer.hpp"
+#include "log.hpp"
 
 #include <algorithm>
 #include <chrono>
-#include <iostream> // TODO: remove when logging works
 
 namespace chip8
 {
@@ -28,7 +28,10 @@ namespace chip8
 
     void cTimer::print()
     {
-        std::cout << "[INFO_] Printing timer information.\nPeriod: " << _period.count() << "\nTime of last set_time:" << _clock_start_time.time_since_epoch().count()
-                  << "\nCountdown start value: " << static_cast<int>(_cycles) << "\nCountdown current value: " << static_cast<int>(get_time()) << '\n';
+        thoth::debug("Printing timer information.\nPeriod: %d\nTime of last set_time: %d\nCountdown start value: %d\nCountdown current value: %d",
+                     _period.count(),
+                     _clock_start_time.time_since_epoch().count(),
+                     static_cast<int>(_cycles),
+                     static_cast<int>(get_time()));
     }
 }
